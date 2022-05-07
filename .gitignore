@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+Build
+antlr4_runtime
+
+antlr-4.10.1-complete.jar
