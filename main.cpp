@@ -48,6 +48,22 @@ int main() {
   ASSERT_EQUAL(switch_text->GetText(), "=1+2");
   ASSERT_EQUAL(std::get<double>(switch_text->GetValue()), 3);
 
+  try {
+    //incorrect formula
+    switch_text->Set("=hd+2-+3((//)(112");
+  } catch (...) {
+    ASSERT_EQUAL(switch_text->GetText(), "=1+2");
+    ASSERT_EQUAL(std::get<double>(switch_text->GetValue()), 3);
+  }
+
+  switch_text->Set("=(1+(2+2)*2)*3");
+  ASSERT_EQUAL(switch_text->GetText(), "=(1+(2+2)*2)*3");
+  ASSERT_EQUAL(std::get<double>(switch_text->GetValue()), 27);
+
+  switch_text->Set("=1+----2");
+  ASSERT_EQUAL(switch_text->GetText(), "=1+----2");
+  ASSERT_EQUAL(std::get<double>(switch_text->GetValue()), 3);
+
   switch_text->Set("=1/0");
   ASSERT_EQUAL(switch_text->GetText(), "=1/0");
   std::cout << std::get<FormulaError>(switch_text->GetValue()) << std::endl;
