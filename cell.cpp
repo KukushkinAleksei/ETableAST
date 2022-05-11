@@ -14,7 +14,7 @@ Cell::~Cell() {}
 void Cell::Set(std::string text) {
   if (text.empty()) {
     Clear();
-  } else if (text.front() == '=' && text.size() > 1) {
+  } else if (text.front() == FORMULA_SIGN && text.size() > 1) {
     impl_ = std::make_unique<FormulaImpl>(text.substr(1));
   } else {
     impl_ = std::make_unique<TextImpl>(text);
@@ -28,14 +28,14 @@ std::string Cell::GetText() const { return impl_->GetText(); }
 
 Cell::Value Cell::TextImpl::GetValue() const {
   std::string value;
-  if (text_.front() == '\'') {
+  if (text_.front() == ESCAPE_SIGN) {
     return text_.substr(1);
   }
   return text_;
 }
 
 std::string Cell::FormulaImpl::GetText() const {
-  return '=' + formula_->GetExpression();
+  return FORMULA_SIGN + formula_->GetExpression();
 }
 
 Cell::Value Cell::FormulaImpl::GetValue() const {
@@ -44,4 +44,17 @@ Cell::Value Cell::FormulaImpl::GetValue() const {
     return {std::get<double>(evaluate_result)};
   }
   return {std::get<FormulaError>(evaluate_result)};
+}
+
+std::ostream& operator<<(std::ostream& output,
+  const CellInterface::Value& val) {
+  
+  if (std::holds_alternative<double>(val)) {
+    output << std::get<double>(val);
+  } else if (std::holds_alternative<std::string>(val)) {
+    output << std::get<std::string>(val);
+  } else if (std::holds_alternative<FormulaError>(val)) {
+    output << std::get<FormulaError>(val);
+  }
+  return output;
 }

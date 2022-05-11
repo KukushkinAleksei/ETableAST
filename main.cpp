@@ -77,6 +77,7 @@ void TestClearCell() {
   sheet->ClearCell("A1"_pos);
   sheet->ClearCell("J10"_pos);
 }
+
 void TestPrint() {
   auto sheet = CreateSheet();
   sheet->SetCell("A2"_pos, "meow");
@@ -97,6 +98,30 @@ void TestPrint() {
   ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{2, 1}));
 }
 
+void TestExample() {
+  auto sheet = CreateSheet();
+  sheet->SetCell("A1"_pos, "=(1+2)*3");
+  sheet->SetCell("B1"_pos, "=1+(2*3)");
+  sheet->SetCell("A2"_pos, "some");
+  sheet->SetCell("B2"_pos, "text");
+  sheet->SetCell("C2"_pos, "here");
+  sheet->SetCell("C3"_pos, "'and");
+  sheet->SetCell("D3"_pos, "'here");
+  sheet->SetCell("B5"_pos, "=1/0");
+
+  ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{5, 4}));
+
+  std::ostringstream texts;
+  sheet->PrintTexts(texts);
+  ASSERT_EQUAL(texts.str(), "=(1+2)*3\t=1+2*3\t\t\nsome\ttext\there\t\n\t\t'and\t'here\n\t\t\t\n\t=1/0\t\t\n");
+
+  std::ostringstream values;
+  sheet->PrintValues(values);
+  ASSERT_EQUAL(values.str(), "9\t7\t\t\nsome\ttext\there\t\n\t\tand\there\n\t\t\t\n\t#DIV/0!\t\t\n");
+
+  sheet->ClearCell("B5"_pos);
+  ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{3, 4}));
+}
 }  // namespace
 
 int main() {
@@ -106,5 +131,6 @@ int main() {
   RUN_TEST(tr, TestSetCellPlainText);
   RUN_TEST(tr, TestClearCell);
   RUN_TEST(tr, TestPrint);
+  RUN_TEST(tr, TestExample);
   return 0;
 }

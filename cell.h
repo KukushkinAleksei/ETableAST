@@ -17,6 +17,7 @@ class Cell : public CellInterface {
  private:
   class Impl {
    public:
+    virtual ~Impl() {}
     virtual Value GetValue() const = 0;
     virtual std::string GetText() const = 0;
   };
@@ -54,3 +55,5 @@ class Cell : public CellInterface {
 
   std::unique_ptr<Impl> impl_;
 };
+
+std::ostream& operator<<(std::ostream& output, const CellInterface::Value& val);

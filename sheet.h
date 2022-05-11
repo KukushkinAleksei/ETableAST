@@ -6,24 +6,30 @@
 #include <functional>
 
 class Sheet : public SheetInterface {
-public:
-    ~Sheet();
+ public:
+  ~Sheet();
 
-    void SetCell(Position pos, std::string text) override;
+  void SetCell(Position pos, std::string text) override;
 
-    const CellInterface* GetCell(Position pos) const override;
-    CellInterface* GetCell(Position pos) override;
+  const CellInterface* GetCell(Position pos) const override;
+  CellInterface* GetCell(Position pos) override;
 
-    void ClearCell(Position pos) override;
+  void UpdatePrintableSize();
 
-    Size GetPrintableSize() const override;
+  void ClearCell(Position pos) override;
 
-    void PrintValues(std::ostream& output) const override;
-    void PrintTexts(std::ostream& output) const override;
+  Size GetPrintableSize() const override;
 
-	// Можете дополнить ваш класс нужными полями и методами
+  
 
+  void PrintValues(std::ostream& output) const override;
+  void PrintTexts(std::ostream& output) const override;
 
-private:
-	// Можете дополнить ваш класс нужными полями и методами
+ private:
+  enum class PrintType { VALUES, TEXT };
+  void PrintData(std::ostream& output, PrintType print_type) const;
+
+ private:
+  std::vector<std::vector<std::unique_ptr<Cell>>> data_;
+  Size print_size_ = {-1, -1};
 };
