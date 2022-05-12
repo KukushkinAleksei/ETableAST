@@ -13,7 +13,9 @@ class Cell : public CellInterface {
 
   Value GetValue() const override;
   std::string GetText() const override;
-
+  std::vector<Position> GetReferencedCells() const override;
+  bool IsReferenced() const;
+  
  private:
   class Impl {
    public:
