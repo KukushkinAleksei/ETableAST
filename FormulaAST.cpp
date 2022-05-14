@@ -169,7 +169,7 @@ public:
           assert(false);
           return static_cast<ExprPrecedence>(INT_MAX);
       }
-      if (!_finite(result)) {
+      if (!std::isnormal(result)) {
         throw FormulaError(FormulaError::Category::Div0);
       }
       return result;
@@ -258,8 +258,13 @@ public:
         return std::get<double>(value);
       } else if (std::holds_alternative<std::string>(value)) {
         try {
-          double number = std::stoi(std::get<std::string>(value));
-          return number;
+          std::string text = std::get<std::string>(value);
+          int number = std::stoi(text);
+          if (std::to_string(number) == text) {
+            return number;
+          } else {
+            throw FormulaError(FormulaError::Category::Value);
+          }
         } catch (...) {
           throw FormulaError(FormulaError::Category::Value);
         }

@@ -28,58 +28,21 @@ Cell* Sheet::GetCellPtr(const Position& ref_pos) {
   return data_[ref_pos.row][ref_pos.col].get();
 }
 
-void Sheet::SetReferencedCells(std::vector<Position>& references,
-                               const Position& pos) {
-  for (const Position& ref_pos : references) {
-    if (!ref_pos.IsValid()) {
-      continue;
-    }
-
-    CellInterface* cell_interface = GetCell(ref_pos);
-    if (cell_interface == nullptr) {
-      // initialise referenced cell
-      ResizeDataUpToPos(ref_pos);
-      data_[ref_pos.row][ref_pos.col] = std::make_unique<Cell>(*this);
-    }
-    Cell* cell = GetCellPtr(ref_pos);
-    cell->AddReferencedIn(pos);
-  }
-}
-
-void Sheet::CheckCircularReferences(std::vector<Position>& references,
-                                    Position& pos) {
-  std::set<Position> stack_of_refs;
-  stack_of_refs.insert(references.begin(), references.end());
-
-  while (!stack_of_refs.empty()) {
-    Position curent = *stack_of_refs.begin();
-    stack_of_refs.erase(curent);
-
-    Cell* ref_cell = GetCellPtr(curent);
-    auto nested_refs = ref_cell->GetReferencedCells();
-    stack_of_refs.insert(nested_refs.begin(), nested_refs.end());
-    if (stack_of_refs.count(pos)) {
-      throw CircularDependencyException("Circular Dependency in " +
-                                        pos.ToString());
-    }
-  }
-}
-
 void Sheet::SetCell(Position pos, std::string text) {
   if (!pos.IsValid()) {
     throw InvalidPositionException("Invalid position");
   }
-
-  auto tmp_cell = std::make_unique<Cell>(*this);
-  tmp_cell->Set(text);
-
   ResizeDataUpToPos(pos);
-
-  auto references = tmp_cell->GetReferencedCells();
-  SetReferencedCells(references, pos);
-  CheckCircularReferences(references, pos);
-
-  data_[pos.row][pos.col] = std::move(tmp_cell);
+  Cell* cell = GetCellPtr(pos);
+  if (cell != nullptr) {
+    if (cell->GetText() == text) {
+      return;
+    }
+  } else {
+    data_[pos.row][pos.col] = std::make_unique<Cell>(*this);    
+    cell = GetCellPtr(pos);
+  }
+  cell->Set(text);
 }
 
 const CellInterface* Sheet::GetCell(Position pos) const {
@@ -171,6 +134,7 @@ void Sheet::PrintData(std::ostream& output, PrintType print_type) const {
 void Sheet::PrintValues(std::ostream& output) const {
   PrintData(output, PrintType::VALUES);
 }
+
 void Sheet::PrintTexts(std::ostream& output) const {
   PrintData(output, PrintType::TEXT);
 }

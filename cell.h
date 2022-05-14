@@ -5,10 +5,14 @@
 #include <optional>
 #include <set>
 
+class Sheet;
+
 class Cell : public CellInterface {
  public:
-  explicit Cell(SheetInterface& sheet);
+  explicit Cell(Sheet& sheet);
   ~Cell();
+
+  void CheckForCycles(std::vector<Position>, Cell* root);
 
   void Set(std::string text);
   void Clear();
@@ -17,10 +21,13 @@ class Cell : public CellInterface {
   std::string GetText() const override;
   std::vector<Position> GetReferencedCells() const override;
   bool IsReferenced() const;
-  void AddReferencedIn(Position pos);
 
  private:
-  class Impl {
+  void FillReferencesCells();
+  void ClearReferencedCells();
+  void DeleteCache() const;
+   
+   class Impl {
    public:
     virtual ~Impl() {}
     virtual Value GetValue() const = 0;
@@ -78,8 +85,7 @@ class Cell : public CellInterface {
   };
 
   std::unique_ptr<Impl> impl_;
-  const SheetInterface& sheet_;
-  std::set<Position> referenced_in_;
+  Sheet& sheet_;
+  std::set<Cell*> dependent_cells_;  
+  std::set<Cell*> referensed_cells_;
 };
-
-std::ostream& operator<<(std::ostream& output, const CellInterface::Value& val);

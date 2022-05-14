@@ -14,6 +14,12 @@ std::ostream& operator<<(std::ostream& output, FormulaError fe){
   return output;
 }
 
+std::ostream& operator<<(std::ostream& output,
+                                const CellInterface::Value& value) {
+  std::visit([&](const auto& x) { output << x; }, value);
+  return output;
+}
+
 namespace {
 class Formula : public FormulaInterface {
 public:

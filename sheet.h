@@ -25,18 +25,15 @@ class Sheet : public SheetInterface {
 
   void PrintTexts(std::ostream& output) const override;
 
+  Cell* GetCellPtr(const Position& ref_pos);
+
  private:
   enum class PrintType { VALUES, TEXT };
   void PrintData(std::ostream& output, PrintType print_type) const;
-  Cell* GetCellPtr(const Position& ref_pos);
+  
 
  private:
   std::vector<std::vector<std::unique_ptr<Cell>>> data_;
   Size print_size_ = {-1, -1};
   void ResizeDataUpToPos(const Position& pos);
-  void SetReferencedCells(std::vector<Position>& references,
-                          const Position& pos);
-
-  void CheckCircularReferences(std::vector<Position>& references,
-                               Position& pos);
 };

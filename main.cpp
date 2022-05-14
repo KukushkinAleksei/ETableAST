@@ -14,14 +14,14 @@ inline std::ostream& operator<<(std::ostream& output, Size size) {
     return output << "(" << size.rows << ", " << size.cols << ")";
 }
 
-inline std::ostream& operator<<(std::ostream& output, const CellInterface::Value& value) {
-    std::visit(
-        [&](const auto& x) {
-            output << x;
-        },
-        value);
-    return output;
-}
+//inline std::ostream& operator<<(std::ostream& output, const CellInterface::Value& value) {
+//    std::visit(
+//        [&](const auto& x) {
+//            output << x;
+//        },
+//        value);
+//    return output;
+//}
 
 namespace {
 std::string ToString(FormulaError::Category category) {
