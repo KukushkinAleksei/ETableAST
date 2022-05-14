@@ -6,8 +6,64 @@
 #include <string>
 #include <optional>
 
+class Cell::Impl {
+ public:
+  virtual ~Impl() {}
+  virtual Value GetValue() const = 0;
+  virtual std::string GetText() const = 0;
+  virtual std::vector<Position> GetReferencedCells() const = 0;
+  virtual void DeleteCache() = 0;
+};
 
-// Реализуйте следующие методы
+class Cell::EmptyImpl : public Impl {
+ public:
+  EmptyImpl() {}
+
+  Value GetValue() const override { return 0.0; }
+
+  std::string GetText() const override { return ""; }
+
+  std::vector<Position> GetReferencedCells() const override { return {}; }
+
+  void DeleteCache() override{};
+};
+
+class Cell::TextImpl : public Impl {
+ public:
+  TextImpl(std::string text) : text_(text) {}
+
+  std::string GetText() const override { return text_; }
+
+  Value GetValue() const override;
+
+  std::vector<Position> GetReferencedCells() const override { return {}; }
+  void DeleteCache() override {}
+
+ private:
+  std::string text_;
+};
+
+class Cell::FormulaImpl : public Impl {
+ public:
+  FormulaImpl(const SheetInterface& sheet, std::string text);
+
+  std::string GetText() const override;
+
+  CellInterface::Value CalculateFormula() const;
+
+  Value GetValue() const override;
+
+  std::vector<Position> GetReferencedCells() const override;
+
+  void DeleteCache() override;
+
+ private:
+  const SheetInterface& sheet_;
+  std::unique_ptr<FormulaInterface> formula_;
+  mutable std::optional<CellInterface::Value> cache_;
+};
+
+
 Cell::Cell(Sheet& sheet) : sheet_(sheet) { Clear(); }
 
 Cell::~Cell() {}
@@ -25,6 +81,10 @@ void Cell::CheckForCycles(std::vector<Position> references, Cell* root) {
 }
 
 void Cell::Set(std::string text) {
+  if (text == impl_->GetText()) {
+    return;
+  }
+
   if (text.empty()) {
     Clear();
   } else if (text.front() == FORMULA_SIGN && text.size() > 1) {
@@ -35,14 +95,14 @@ void Cell::Set(std::string text) {
     impl_ = std::make_unique<TextImpl>(text);
   }
   ClearReferencedCells();
-  FillReferencesCells();
+  FillReferencedCells();
   DeleteCache();
 }
 
-void Cell::FillReferencesCells() {
+void Cell::FillReferencedCells() {
   for (const Position& ref_pos : GetReferencedCells()) {
     if (!ref_pos.IsValid()) {
-      continue;
+      throw InvalidPositionException("Invalid position");
     }
     CellInterface* cell_interface = sheet_.GetCell(ref_pos);
     if (cell_interface == nullptr) {
@@ -74,7 +134,7 @@ std::vector<Position> Cell::GetReferencedCells() const {
   return impl_->GetReferencedCells();
 }
 
-bool Cell::IsReferenced() const { return dependent_cells_.empty(); }
+bool Cell::IsReferenced() const { return !dependent_cells_.empty(); }
 
 
 void Cell::DeleteCache() const {

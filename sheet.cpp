@@ -34,11 +34,7 @@ void Sheet::SetCell(Position pos, std::string text) {
   }
   ResizeDataUpToPos(pos);
   Cell* cell = GetCellPtr(pos);
-  if (cell != nullptr) {
-    if (cell->GetText() == text) {
-      return;
-    }
-  } else {
+  if (cell == nullptr) {
     data_[pos.row][pos.col] = std::make_unique<Cell>(*this);    
     cell = GetCellPtr(pos);
   }
