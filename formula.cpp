@@ -10,7 +10,8 @@
 using namespace std::literals;
 
 std::ostream& operator<<(std::ostream& output, FormulaError fe){
-    return output << "#DIV/0!";
+  output << fe.ToString();
+  return output;
 }
 
 namespace {
@@ -19,9 +20,9 @@ public:
 // Реализуйте следующие методы:
  explicit Formula(std::string expression):ast_(ParseFormulaAST(expression)){ 
  }
- Value Evaluate() const override {
+ Value Evaluate(const SheetInterface& sheet) const override {
    try {
-     return ast_.Execute();
+     return ast_.Execute(sheet);
    } catch (FormulaError& e) {
      return e;
    }   
@@ -32,11 +33,25 @@ public:
    return buffer.str();
  }
 
+ std::vector<Position> GetReferencedCells() const { 
+   const auto& cells_list = ast_.GetCells();
+
+   std::vector<Position> result{cells_list.cbegin(), cells_list.cend()};
+   auto last = std::unique(result.begin(), result.end());
+   result.erase(last, result.end());
+
+   return result;
+ }
+
 private:
     FormulaAST ast_;
 };
 }  // namespace
 
 std::unique_ptr<FormulaInterface> ParseFormula(std::string expression) {
-  return std::make_unique<Formula>(std::move(expression));
+  try {
+    return std::make_unique<Formula>(std::move(expression));
+  } catch (...) {
+    throw FormulaException("Parse error");
+  }
 }

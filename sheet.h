@@ -12,6 +12,7 @@ class Sheet : public SheetInterface {
   void SetCell(Position pos, std::string text) override;
 
   const CellInterface* GetCell(Position pos) const override;
+
   CellInterface* GetCell(Position pos) override;
 
   void UpdatePrintableSize();
@@ -20,16 +21,22 @@ class Sheet : public SheetInterface {
 
   Size GetPrintableSize() const override;
 
-  
-
   void PrintValues(std::ostream& output) const override;
+
   void PrintTexts(std::ostream& output) const override;
 
  private:
   enum class PrintType { VALUES, TEXT };
   void PrintData(std::ostream& output, PrintType print_type) const;
+  Cell* GetCellPtr(const Position& ref_pos);
 
  private:
   std::vector<std::vector<std::unique_ptr<Cell>>> data_;
   Size print_size_ = {-1, -1};
+  void ResizeDataUpToPos(const Position& pos);
+  void SetReferencedCells(std::vector<Position>& references,
+                          const Position& pos);
+
+  void CheckCircularReferences(std::vector<Position>& references,
+                               Position& pos);
 };

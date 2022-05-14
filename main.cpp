@@ -254,23 +254,23 @@ void TestEmptyCellTreatedAsZero() {
 }
 
 void TestFormulaInvalidPosition() {
-    auto sheet = CreateSheet();
-    auto try_formula = [&](const std::string& formula) {
-        try {
-            sheet->SetCell("A1"_pos, formula);
-            ASSERT(false);
-        } catch (const FormulaException&) {
-            // we expect this one
-        }
-    };
+  auto sheet = CreateSheet();
+  auto try_formula = [&](const std::string& formula) {
+    try {
+      sheet->SetCell("A1"_pos, formula);
+      ASSERT(false);
+    } catch (const FormulaException&) {
+      // we expect this one
+    }
+  };
 
-    try_formula("=X0");
-    try_formula("=ABCD1");
-    try_formula("=A123456");
-    try_formula("=ABCDEFGHIJKLMNOPQRS1234567890");
-    try_formula("=XFD16385");
-    try_formula("=XFE16384");
-    try_formula("=R2D2");
+  try_formula("=X0");
+  try_formula("=ABCD1");
+  try_formula("=A123456");
+  try_formula("=ABCDEFGHIJKLMNOPQRS1234567890");
+  try_formula("=XFD16385");
+  try_formula("=XFE16384");
+  try_formula("=R2D2");
 }
 
 void TestPrint() {
