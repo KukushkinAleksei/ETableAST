@@ -371,6 +371,19 @@ void TestExample() {
   sheet->ClearCell("B5"_pos);
   ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{3, 4}));
 }
+
+void TestExtra() {
+  auto sheet = CreateSheet();
+  sheet->SetCell("A3"_pos, "=(1+1)/-1");
+  sheet->SetCell("C3"_pos, "=(1+1)/(+1)");
+  sheet->SetCell("A4"_pos, "=A3+C3");
+
+  auto val1 = sheet->GetCell("A3"_pos)->GetValue();
+  auto val2 = sheet->GetCell("C3"_pos)->GetValue();
+  auto val3 = sheet->GetCell("A4"_pos)->GetValue();
+  ASSERT_EQUAL(sheet->GetCell("A4"_pos)->GetValue(), CellInterface::Value(0.0));
+
+}
 }  // namespace
 
 int main() {
@@ -395,6 +408,7 @@ int main() {
     RUN_TEST(tr, TestCellReferences);
     RUN_TEST(tr, TestFormulaIncorrect);
     RUN_TEST(tr, TestCellCircularReferences);
+    RUN_TEST(tr, TestExtra);
  
     return 0;
 }

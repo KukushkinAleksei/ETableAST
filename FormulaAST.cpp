@@ -169,7 +169,7 @@ public:
           assert(false);
           return static_cast<ExprPrecedence>(INT_MAX);
       }
-      if (!std::isnormal(result)) {
+      if (!std::isfinite(result)) {
         throw FormulaError(FormulaError::Category::Div0);
       }
       return result;
